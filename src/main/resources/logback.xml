@@ -1,0 +1,15 @@
+<configuration>
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.apache.parquet" level="warn"/>
+    <logger name="org.apache.hadoop" level="warn"/>
+    <logger name="io.delta.standalone" level="warn"/>
+    <logger name="com.exacaster.deltafetch.search" level="debug"/>
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

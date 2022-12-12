@@ -1,0 +1,7 @@
+.idea
+.gradle
+build
+out
+generated
+/src/main/jib/lib
+**/*/application-prod.yml
