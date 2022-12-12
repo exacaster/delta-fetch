@@ -1,0 +1,4 @@
+micronaut:
+  caches:
+    path-index:
+      maximumSize: 200

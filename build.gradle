@@ -1,0 +1,45 @@
+plugins {
+    id "groovy"
+    id "io.micronaut.application" version "3.6.6"
+    id "com.github.ben-manes.versions" version "0.44.0"
+}
+
+group 'com.exacaster.deltafetch'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+micronaut {
+    version = "3.5.1"
+    runtime "netty"
+}
+mainClassName = "com.exacaster.deltarest.Application"
+
+dependencies {
+    // Micronaut
+    implementation 'io.micronaut.cache:micronaut-cache-caffeine'
+
+    // Delta reading
+    implementation 'io.delta:delta-standalone_2.12:0.6.0'
+    implementation( 'org.apache.hadoop:hadoop-client:3.3.4') {
+        exclude group: 'org.slf4j'
+    }
+    implementation 'org.apache.parquet:parquet-hadoop:1.12.3'
+    implementation ('org.apache.hadoop:hadoop-aws:3.3.4') {
+        exclude group: 'org.slf4j'
+    }
+
+    // TestDependencies
+    testImplementation "io.micronaut.test:micronaut-test-spock"
+    testImplementation "io.micronaut:micronaut-http-client"
+}
+
+test {
+    useJUnitPlatform()
+}
