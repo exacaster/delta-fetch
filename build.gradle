@@ -19,7 +19,7 @@ micronaut {
     version = "3.5.1"
     runtime "netty"
 }
-mainClassName = "com.exacaster.deltarest.Application"
+mainClassName = "com.exacaster.deltafetch.Application"
 
 dependencies {
     // Micronaut
