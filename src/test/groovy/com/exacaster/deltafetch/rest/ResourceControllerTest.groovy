@@ -20,8 +20,8 @@ class ResourceControllerTest extends Specification implements TestPropertyProvid
         def response = client.toBlocking().retrieve(HttpRequest.GET("/api/users/912740210653_1451011"), Map.class)
 
         then:
-        response.get("resource").get("user_id") == "912740210653_1451011"
-        response.get("resource").get("sub_type") == "PREPAID"
+        response.get("data").get("user_id") == "912740210653_1451011"
+        response.get("data").get("sub_type") == "PREPAID"
 
         when: "does not exist"
         client.toBlocking().exchange(HttpRequest.GET("/api/users/none")).status()
