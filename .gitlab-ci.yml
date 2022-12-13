@@ -1,0 +1,19 @@
+stages:
+  - build
+  - quality
+  - publish-image-cdp-ecrs
+  - release-tag
+  - trigger-catfarm
+
+default:
+  image: 'eclipse-temurin:11-jdk-focal'
+include:
+  - project: cdp/utils/ci
+    ref: main
+    file: .cdp-java-template.yml
+
+build:
+  stage: build
+  script: |
+    ./gradlew test
+    ./gradlew dockerBuild -PIMAGE=${CI_REGISTRY_IMAGE} -PTAG=${TAG}
