@@ -43,3 +43,17 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+tasks.named("dockerfile") {
+    baseImage = "eclipse-temurin:11-jre-focal"
+}
+
+tasks.named("dockerBuild") {
+    images = [getImage()]
+}
+
+def getImage() {
+    def image = findProperty('IMAGE') ?: 'exacaster/delta-fetch'
+    def tag = findProperty('TAG') ?: 'latest'
+    return "${image}:${tag}"
+}
