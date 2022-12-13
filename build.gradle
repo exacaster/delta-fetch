@@ -24,6 +24,7 @@ mainClassName = "com.exacaster.deltafetch.Application"
 dependencies {
     // Micronaut
     implementation 'io.micronaut.cache:micronaut-cache-caffeine'
+    runtimeOnly'io.micronaut:micronaut-management'
 
     // Delta reading
     implementation 'io.delta:delta-standalone_2.12:0.6.0'

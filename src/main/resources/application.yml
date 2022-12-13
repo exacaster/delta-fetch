@@ -2,3 +2,19 @@ micronaut:
   caches:
     path-index:
       maximumSize: 200
+
+  server:
+    thread-selection: AUTO
+    cors:
+      enabled: true
+
+  application:
+    name: delta-fetch
+
+  metrics:
+    enabled: true
+    export:
+      prometheus:
+        enabled: true
+        step: PT1M
+        descriptions: true
