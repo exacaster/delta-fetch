@@ -43,8 +43,13 @@ public class ResourceRequestHandler {
 
     private List<ColumnValueFilter> buildFilters(UriMatchInfo info) {
         return resource.getFilterVariables().stream()
-                .map(variable -> new ColumnValueFilter(variable.getColumn(),
-                        ofNullable(variable.getPathVariable()).map(key -> info.getVariableValues().get(key))
+                .map(variable -> new ColumnValueFilter(
+                        ofNullable(variable.getPathColumn())
+                                .map(pathVar -> info.getVariableValues().get(pathVar))
+                                .map(Object::toString)
+                                .orElse(variable.getColumn()),
+                        ofNullable(variable.getPathVariable())
+                                .map(key -> info.getVariableValues().get(key))
                                 .map(Object::toString)
                                 .orElse(variable.getStaticValue()))).collect(Collectors.toList());
     }

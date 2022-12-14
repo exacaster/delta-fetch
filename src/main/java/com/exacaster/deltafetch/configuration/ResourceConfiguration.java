@@ -62,17 +62,23 @@ public class ResourceConfiguration {
     @Introspected
     public static class FilterVariable {
         private final String column;
+        private final String pathColumn;
         private final String staticValue;
         private final String pathVariable;
 
-        public FilterVariable(String column, String staticValue, String pathVariable) {
+        public FilterVariable(String column, String pathColumn, String staticValue, String pathVariable) {
             this.column = column;
+            this.pathColumn = pathColumn;
             this.staticValue = staticValue;
             this.pathVariable = pathVariable;
         }
 
         public String getColumn() {
             return column;
+        }
+
+        public String getPathColumn() {
+            return pathColumn;
         }
 
         public String getStaticValue() {
