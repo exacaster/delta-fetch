@@ -2,6 +2,7 @@ micronaut:
   caches:
     path-index:
       maximumSize: 200
+      expireAfterWrite: 600s
 
   server:
     thread-selection: AUTO
