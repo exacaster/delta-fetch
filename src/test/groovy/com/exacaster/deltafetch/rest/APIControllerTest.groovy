@@ -10,7 +10,7 @@ import jakarta.inject.Inject
 import spock.lang.Specification
 
 @MicronautTest(environments = ["it"])
-class ResourceControllerTest extends Specification implements TestPropertyProvider {
+class APIControllerTest extends Specification implements TestPropertyProvider {
     @Inject
     @Client("/")
     HttpClient client
@@ -29,6 +29,16 @@ class ResourceControllerTest extends Specification implements TestPropertyProvid
         then: "not found"
         HttpClientResponseException ex = thrown(HttpClientResponseException)
         ex.status.code == 404
+
+        when: "getting schema"
+        response = client.toBlocking().retrieve(HttpRequest.GET("/api/schemas/users"), Map.class)
+        def fields = response.get("data").get("fields")
+
+        then: "returns schema"
+        fields.size() == 5
+        fields.get(0).get("name") == "user_id"
+        fields.get(0).get("type") == "string"
+        fields.get(0).get("nullable") == true
     }
 
     @Override
@@ -39,7 +49,8 @@ class ResourceControllerTest extends Specification implements TestPropertyProvid
                                 [
                                         path              : '/api/users/{user_id}',
                                         'delta-path'      : getClass().getResource("/test_data").toString(),
-                                        'filter-variables': [[column: 'user_id', 'path-variable': 'user_id']]
+                                        'filter-variables': [[column: 'user_id', 'path-variable': 'user_id']],
+                                        'schema-path'     : '/api/schemas/users'
                                 ]
                         ]
                 ]

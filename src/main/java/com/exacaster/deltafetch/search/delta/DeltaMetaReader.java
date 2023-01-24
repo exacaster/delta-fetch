@@ -19,13 +19,13 @@ import java.util.Optional;
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 @Singleton
-public class DeltaStatsReader {
-    private final static Logger LOG = LoggerFactory.getLogger(DeltaStatsReader.class);
+public class DeltaMetaReader {
+    private final static Logger LOG = LoggerFactory.getLogger(DeltaMetaReader.class);
     private final Configuration conf;
     private final SyncCache cache;
     private final ObjectMapper mapper;
 
-    public DeltaStatsReader(Configuration conf, SyncCache cache) {
+    public DeltaMetaReader(Configuration conf, SyncCache cache) {
         this.conf = conf;
         this.cache = cache;
         this.mapper = new ObjectMapper()
@@ -33,8 +33,8 @@ public class DeltaStatsReader {
                 .disable(FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
-    public DeltaStats findStats(String tablePath, boolean exact) {
-        Optional<DeltaStats> cachedStats = cache.get(tablePath, DeltaStats.class);
+    public DeltaMeta findMeta(String tablePath, boolean exact) {
+        Optional<DeltaMeta> cachedStats = cache.get(tablePath, DeltaMeta.class);
         var result = cachedStats.map(val -> {
             if (!exact) {
                 LOG.debug("Using cached DeltaStats, because not exact query: {}", tablePath);
@@ -42,23 +42,27 @@ public class DeltaStatsReader {
             }
             var table = DeltaLog.forTable(conf, tablePath).snapshot();
             var version = table.getVersion();
+            var schema = table.getMetadata().getSchema();
             if (val.getVersion().equals(version)) {
                 LOG.debug("Using cached DeltaStats, because version match: {}", tablePath);
                 return val;
             }
             LOG.debug("Reading newest DeltaStats from table meta: {}", tablePath);
-            return readFromDeltaMeta(table, version);
+            var stats = readFromDeltaMeta(table);
+            return new DeltaMeta(version, stats, schema);
         }).orElseGet(() -> {
             LOG.debug("Reading newest DeltaStats from table meta: {}", tablePath);
             var table = DeltaLog.forTable(conf, tablePath).snapshot();
             var version = table.getVersion();
-            return readFromDeltaMeta(table, version);
+            var schema = table.getMetadata().getSchema();
+            var stats = readFromDeltaMeta(table);
+            return new DeltaMeta(version, stats, schema);
         });
         cache.put(tablePath, result);
         return result;
     }
 
-    private DeltaStats readFromDeltaMeta(Snapshot table, long version) {
+    private Map<String, FileStats> readFromDeltaMeta(Snapshot table) {
         var scan = table.scan();
         Map<String, FileStats> statList = new HashMap<>();
 
@@ -76,6 +80,6 @@ public class DeltaStatsReader {
             throw new IllegalStateException("Failed reading Delta table stats", e);
         }
 
-        return new DeltaStats(version, statList);
+        return statList;
     }
 }

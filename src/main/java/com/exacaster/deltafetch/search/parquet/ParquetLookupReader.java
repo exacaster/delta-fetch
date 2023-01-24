@@ -1,7 +1,6 @@
 package com.exacaster.deltafetch.search.parquet;
 
 import com.exacaster.deltafetch.search.ColumnValueFilter;
-import com.exacaster.deltafetch.search.SearchResult;
 import com.exacaster.deltafetch.search.parquet.readsupport.MapReadSupport;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -29,13 +28,13 @@ public class ParquetLookupReader {
         this.conf = conf;
     }
 
-    public Optional<SearchResult<Map<String, Object>>> findFirst(List<ColumnValueFilter> filters) {
+    public Optional<Map<String, Object>> findFirst(List<ColumnValueFilter> filters) {
         LOG.debug("Reading: {} with filters {}", path, filters);
         try (var reader = prepareReader(filters)) {
             var result = reader.read();
             if (result != null) {
                 LOG.debug("Found: {}", result);
-                return Optional.of(new SearchResult<>(result));
+                return Optional.of(result);
             }
         } catch (IOException e) {
             throw new IllegalStateException("Failed reading file", e);

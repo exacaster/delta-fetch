@@ -5,6 +5,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.convert.format.MapFormat;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -38,11 +39,14 @@ public class ResourceConfiguration {
 
         private final String deltaPath;
 
+        private final String schemaPath;
+
         private final List<FilterVariable> filterVariables;
 
-        public Resource(String path, String deltaPath, List<FilterVariable> filterVariables) {
+        public Resource(String path, String deltaPath, String schemaPath, List<FilterVariable> filterVariables) {
             this.path = path;
             this.deltaPath = deltaPath;
+            this.schemaPath = schemaPath;
             this.filterVariables = filterVariables;
         }
 
@@ -52,6 +56,10 @@ public class ResourceConfiguration {
 
         public String getDeltaPath() {
             return deltaPath;
+        }
+
+        public @Nullable String getSchemaPath() {
+            return schemaPath;
         }
 
         public List<FilterVariable> getFilterVariables() {

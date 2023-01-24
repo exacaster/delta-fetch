@@ -1,6 +1,6 @@
 package com.exacaster.deltafetch.search
 
-import com.exacaster.deltafetch.search.delta.DeltaStatsReader
+import com.exacaster.deltafetch.search.delta.DeltaMetaReader
 import io.micronaut.cache.SyncCache
 import org.apache.hadoop.conf.Configuration
 import spock.lang.Specification
@@ -13,7 +13,7 @@ class SearchServiceTest extends Specification {
             get(*_) >> Optional.empty()
         }
         def conf = new Configuration()
-        def statsReader = new DeltaStatsReader(conf, cache)
+        def statsReader = new DeltaMetaReader(conf, cache)
         def svc = new SearchService(statsReader, new Configuration())
         def path = getClass().getResource("/test_data").toString()
 
