@@ -22,7 +22,7 @@ class SearchServiceTest extends Specification {
 
         then:
         result.isPresent()
-        result.get().getData().get("user_id") == "912740210653_1451011"
+        result.get().getValue().get("user_id") == "912740210653_1451011"
 
         when: "searching with non-existent value"
         result = svc.findOne(path, [new ColumnValueFilter("user_id", "none")], true)
