@@ -1,44 +1,44 @@
-package com.exacaster.deltafetch.rest;
+package com.exacaster.deltafetch.rest.resource;
 
 import com.exacaster.deltafetch.configuration.ResourceConfiguration;
+import com.exacaster.deltafetch.rest.ApiResponse;
+import com.exacaster.deltafetch.rest.RequestHandler;
 import com.exacaster.deltafetch.search.ColumnValueFilter;
-import com.exacaster.deltafetch.search.SearchResult;
 import com.exacaster.deltafetch.search.SearchService;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.uri.UriMatchInfo;
 import io.micronaut.http.uri.UriMatchTemplate;
-import org.apache.commons.lang3.text.StrSubstitutor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.exacaster.deltafetch.rest.RequestUtils.buildDeltaPath;
+import static com.exacaster.deltafetch.rest.RequestUtils.isRequestForLatestData;
 import static java.util.Optional.ofNullable;
 
-public class ResourceRequestHandler {
+public class ResourceRequestHandler implements RequestHandler<Map<String, Object>> {
     private final SearchService searchService;
     private final ResourceConfiguration.Resource resource;
-    private final UriMatchTemplate template;
+    private final UriMatchTemplate resourceTemplate;
 
     public ResourceRequestHandler(SearchService searchService, ResourceConfiguration.Resource resource) {
         this.searchService = searchService;
         this.resource = resource;
-        this.template = new UriMatchTemplate(resource.getPath());
+        this.resourceTemplate = new UriMatchTemplate(resource.getPath());
     }
 
-    public Optional<SearchResult> handle(HttpRequest request) {
+    public Optional<ApiResponse<Map<String, Object>>> handle(HttpRequest request) {
         var path = request.getPath();
-        var exact = request.getParameters().get("exact", Boolean.class).filter(val -> val).isPresent();
-        return template.match(path)
+        var exact = isRequestForLatestData(request);
+        return resourceTemplate.match(path)
                 .flatMap(info -> {
-                    var deltaPath = buildDeltaPath(info);
+                    var deltaPath = buildDeltaPath(resource.getDeltaPath(), info);
                     var filters = buildFilters(info);
-                    return searchService.findOne(deltaPath, filters, exact);
+                    return searchService.findOne(deltaPath, filters, exact)
+                            .map(result -> new ApiResponse<>(result.getKey(), result.getValue()));
                 });
-    }
-
-    private String buildDeltaPath(UriMatchInfo info) {
-        return StrSubstitutor.replace(resource.getDeltaPath(), info.getVariableValues(), "{", "}");
     }
 
     private List<ColumnValueFilter> buildFilters(UriMatchInfo info) {

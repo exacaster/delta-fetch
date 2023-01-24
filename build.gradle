@@ -46,7 +46,7 @@ test {
 }
 
 tasks.named("dockerfile") {
-    baseImage = "eclipse-temurin:11-jre-focal"
+    baseImage = "gcr.io/distroless/java11-debian11:latest"
 }
 
 tasks.named("dockerBuild") {
