@@ -1,8 +1,8 @@
 package com.exacaster.deltafetch.configuration;
 
 import com.exacaster.deltafetch.rest.RequestHandler;
-import com.exacaster.deltafetch.rest.resource.ResourceRequestHandler;
 import com.exacaster.deltafetch.rest.Router;
+import com.exacaster.deltafetch.rest.resource.ResourceRequestHandler;
 import com.exacaster.deltafetch.rest.schema.SchemaRequestHandler;
 import com.exacaster.deltafetch.search.SearchService;
 import com.exacaster.deltafetch.search.delta.DeltaMetaReader;

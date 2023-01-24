@@ -13,7 +13,7 @@ public class Router {
         this.handlers = handlers;
     }
 
-    public Optional<APIResponse> route(HttpRequest request) {
+    public Optional<ApiResponse> route(HttpRequest request) {
         return handlers.stream()
                 .flatMap(h -> h.handle(request).stream())
                 .findFirst();

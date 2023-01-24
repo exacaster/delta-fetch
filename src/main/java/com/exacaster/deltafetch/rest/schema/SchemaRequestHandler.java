@@ -1,7 +1,7 @@
 package com.exacaster.deltafetch.rest.schema;
 
 import com.exacaster.deltafetch.configuration.ResourceConfiguration;
-import com.exacaster.deltafetch.rest.APIResponse;
+import com.exacaster.deltafetch.rest.ApiResponse;
 import com.exacaster.deltafetch.rest.RequestHandler;
 import com.exacaster.deltafetch.search.delta.DeltaMetaReader;
 import io.delta.standalone.types.StructType;
@@ -27,14 +27,14 @@ public class SchemaRequestHandler implements RequestHandler<Schema> {
     }
 
     @Override
-    public Optional<APIResponse<Schema>> handle(HttpRequest request) {
+    public Optional<ApiResponse<Schema>> handle(HttpRequest request) {
         var path = request.getPath();
         var exact = isRequestForLatestData(request);
         return schemaUriMatcher.match(path)
                 .map(info -> {
                     var deltaPath = buildDeltaPath(resource.getDeltaPath(), info);
                     var meta = metaReader.findMeta(deltaPath, exact);
-                    return new APIResponse<>(meta.getVersion(), toSchema(meta.getSchema()));
+                    return new ApiResponse<>(meta.getVersion(), toSchema(meta.getSchema()));
                 });
     }
 

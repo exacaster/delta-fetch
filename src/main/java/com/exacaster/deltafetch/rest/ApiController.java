@@ -8,15 +8,15 @@ import io.micronaut.http.annotation.Get;
 import java.util.Optional;
 
 @Controller("/")
-public class APIController {
+public class ApiController {
     private final Router router;
 
-    public APIController(Router router) {
+    public ApiController(Router router) {
         this.router = router;
     }
 
     @Get(value = "/{+path*}", consumes = MediaType.ALL)
-    public Optional<APIResponse> index(HttpRequest request) {
+    public Optional<ApiResponse> index(HttpRequest request) {
         return router.route(request);
     }
 }

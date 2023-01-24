@@ -10,7 +10,7 @@ import jakarta.inject.Inject
 import spock.lang.Specification
 
 @MicronautTest(environments = ["it"])
-class APIControllerTest extends Specification implements TestPropertyProvider {
+class ApiControllerTest extends Specification implements TestPropertyProvider {
     @Inject
     @Client("/")
     HttpClient client

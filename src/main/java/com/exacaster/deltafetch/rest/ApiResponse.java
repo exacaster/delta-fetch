@@ -1,11 +1,11 @@
 package com.exacaster.deltafetch.rest;
 
-public class APIResponse<T> {
+public class ApiResponse<T> {
 
     private final Long version;
     private final T data;
 
-    public APIResponse(Long version, T resource) {
+    public ApiResponse(Long version, T resource) {
         this.version = version;
         this.data = resource;
     }

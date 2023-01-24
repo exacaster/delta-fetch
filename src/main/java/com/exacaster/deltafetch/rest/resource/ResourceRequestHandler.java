@@ -1,7 +1,7 @@
 package com.exacaster.deltafetch.rest.resource;
 
 import com.exacaster.deltafetch.configuration.ResourceConfiguration;
-import com.exacaster.deltafetch.rest.APIResponse;
+import com.exacaster.deltafetch.rest.ApiResponse;
 import com.exacaster.deltafetch.rest.RequestHandler;
 import com.exacaster.deltafetch.search.ColumnValueFilter;
 import com.exacaster.deltafetch.search.SearchService;
@@ -29,7 +29,7 @@ public class ResourceRequestHandler implements RequestHandler<Map<String, Object
         this.resourceTemplate = new UriMatchTemplate(resource.getPath());
     }
 
-    public Optional<APIResponse<Map<String, Object>>> handle(HttpRequest request) {
+    public Optional<ApiResponse<Map<String, Object>>> handle(HttpRequest request) {
         var path = request.getPath();
         var exact = isRequestForLatestData(request);
         return resourceTemplate.match(path)
@@ -37,7 +37,7 @@ public class ResourceRequestHandler implements RequestHandler<Map<String, Object
                     var deltaPath = buildDeltaPath(resource.getDeltaPath(), info);
                     var filters = buildFilters(info);
                     return searchService.findOne(deltaPath, filters, exact)
-                            .map(result -> new APIResponse<>(result.getKey(), result.getValue()));
+                            .map(result -> new ApiResponse<>(result.getKey(), result.getValue()));
                 });
     }
 
