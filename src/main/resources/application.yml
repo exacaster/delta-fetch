@@ -1,4 +1,26 @@
 micronaut:
+  security:
+    enabled: ${app.security.enabled:false}
+    filter:
+      pattern: ${app.security.filter.pattern:/**}
+    intercept-url-map:
+      - pattern: ${app.security.filter.pattern:/**}
+        http-method: GET
+        access:
+          - isAuthenticated()
+    basic-auth:
+      enabled: ${app.security.basic.enabled:false}
+    token:
+      jwt:
+        bearer:
+          enabled: ${app.security.oauth2.enabled:false}
+        claims-validators:
+          issuer: ${app.security.oauth2.claims-validators.issuer:}
+        signatures:
+          jwks:
+            uaa:
+              url: ${app.security.oauth2.jwks.url:}
+
   caches:
     path-index:
       maximumSize: 200

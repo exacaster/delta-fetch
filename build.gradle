@@ -4,8 +4,8 @@ plugins {
     id "com.github.ben-manes.versions" version "0.44.0"
 }
 
-group 'com.exacaster.deltafetch'
-version '1.0-SNAPSHOT'
+group "com.exacaster.deltafetch"
+version "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -23,17 +23,21 @@ mainClassName = "com.exacaster.deltafetch.Application"
 
 dependencies {
     // Micronaut
-    implementation 'io.micronaut.cache:micronaut-cache-caffeine'
-    runtimeOnly'io.micronaut:micronaut-management'
+    implementation "io.micronaut.cache:micronaut-cache-caffeine"
+    implementation "io.micronaut.security:micronaut-security-oauth2"
+    implementation "io.micronaut.security:micronaut-security-jwt"
+    implementation "io.micronaut.reactor:micronaut-reactor"
+    implementation "com.nimbusds:nimbus-jose-jwt:9.25"
+    runtimeOnly "io.micronaut:micronaut-management"
 
     // Delta reading
-    implementation 'io.delta:delta-standalone_2.12:0.6.0'
-    implementation( 'org.apache.hadoop:hadoop-client:3.3.4') {
-        exclude group: 'org.slf4j'
+    implementation "io.delta:delta-standalone_2.12:0.6.0"
+    implementation("org.apache.hadoop:hadoop-client:3.3.4") {
+        exclude group: "org.slf4j"
     }
-    implementation 'org.apache.parquet:parquet-hadoop:1.12.3'
-    implementation ('org.apache.hadoop:hadoop-aws:3.3.4') {
-        exclude group: 'org.slf4j'
+    implementation "org.apache.parquet:parquet-hadoop:1.12.3"
+    implementation("org.apache.hadoop:hadoop-aws:3.3.4") {
+        exclude group: "org.slf4j"
     }
 
     // Test Dependencies
