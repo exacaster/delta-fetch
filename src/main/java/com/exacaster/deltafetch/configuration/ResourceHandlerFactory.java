@@ -1,18 +1,20 @@
 package com.exacaster.deltafetch.configuration;
 
+import static com.exacaster.deltafetch.configuration.ResponseType.LIST;
+
 import com.exacaster.deltafetch.rest.RequestHandler;
 import com.exacaster.deltafetch.rest.Router;
-import com.exacaster.deltafetch.rest.resource.ResourceRequestHandler;
+import com.exacaster.deltafetch.rest.resource.ListResourceRequestHandler;
+import com.exacaster.deltafetch.rest.resource.SingleResourceRequestHandler;
 import com.exacaster.deltafetch.rest.schema.SchemaRequestHandler;
 import com.exacaster.deltafetch.search.SearchService;
 import com.exacaster.deltafetch.search.delta.DeltaMetaReader;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
-import org.apache.hadoop.conf.Configuration;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.hadoop.conf.Configuration;
 
 @Factory
 public class ResourceHandlerFactory {
@@ -24,7 +26,11 @@ public class ResourceHandlerFactory {
         return new Router(configuration.getResources().stream()
                 .flatMap(resource -> {
                     List<RequestHandler> handlers = new ArrayList<>();
-                    handlers.add(new ResourceRequestHandler(searchService, resource));
+                    if (LIST.equals(resource.getResponseType())) {
+                        handlers.add(new ListResourceRequestHandler(searchService, resource));
+                    } else {
+                        handlers.add(new SingleResourceRequestHandler(searchService, resource));
+                    }
                     if (resource.getSchemaPath() != null) {
                         handlers.add(new SchemaRequestHandler(metaReader, resource));
                     }

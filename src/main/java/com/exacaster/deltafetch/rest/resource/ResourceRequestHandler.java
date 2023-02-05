@@ -1,44 +1,55 @@
 package com.exacaster.deltafetch.rest.resource;
 
+import static com.exacaster.deltafetch.configuration.ResponseType.LIST;
+import static com.exacaster.deltafetch.rest.RequestUtils.buildDeltaPath;
+import static com.exacaster.deltafetch.rest.RequestUtils.isRequestForLatestData;
+import static java.util.Optional.ofNullable;
+
 import com.exacaster.deltafetch.configuration.ResourceConfiguration;
-import com.exacaster.deltafetch.rest.ApiResponse;
-import com.exacaster.deltafetch.rest.RequestHandler;
 import com.exacaster.deltafetch.search.ColumnValueFilter;
 import com.exacaster.deltafetch.search.SearchService;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.uri.UriMatchInfo;
 import io.micronaut.http.uri.UriMatchTemplate;
-
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.Range;
+import org.apache.commons.lang3.tuple.Pair;
 
-import static com.exacaster.deltafetch.rest.RequestUtils.buildDeltaPath;
-import static com.exacaster.deltafetch.rest.RequestUtils.isRequestForLatestData;
-import static java.util.Optional.ofNullable;
-
-public class ResourceRequestHandler implements RequestHandler<Map<String, Object>> {
+public class ResourceRequestHandler {
     private final SearchService searchService;
     private final ResourceConfiguration.Resource resource;
     private final UriMatchTemplate resourceTemplate;
+    private final Range<Integer> limitRange;
 
     public ResourceRequestHandler(SearchService searchService, ResourceConfiguration.Resource resource) {
         this.searchService = searchService;
         this.resource = resource;
         this.resourceTemplate = new UriMatchTemplate(resource.getPath());
+        this.limitRange = Range.between(1, resource.getMaxResults());
     }
 
-    public Optional<ApiResponse<Map<String, Object>>> handle(HttpRequest request) {
+    protected Stream<Pair<Long, Map<String, Object>>> handleStream(HttpRequest request) {
         var path = request.getPath();
         var exact = isRequestForLatestData(request);
-        return resourceTemplate.match(path)
+        var limit = getLimit(request);
+        return resourceTemplate.match(path).stream()
                 .flatMap(info -> {
                     var deltaPath = buildDeltaPath(resource.getDeltaPath(), info);
                     var filters = buildFilters(info);
-                    return searchService.findOne(deltaPath, filters, exact)
-                            .map(result -> new ApiResponse<>(result.getKey(), result.getValue()));
+                    return searchService.find(deltaPath, filters, exact, limit);
                 });
+    }
+
+    private Integer getLimit(HttpRequest request) {
+        if (LIST.equals(resource.getResponseType())) {
+            return request.getParameters().get("limit", Integer.class)
+                    .filter(limitRange::contains)
+                    .orElseGet(limitRange::getMaximum);
+        }
+        return limitRange.getMinimum();
     }
 
     private List<ColumnValueFilter> buildFilters(UriMatchInfo info) {

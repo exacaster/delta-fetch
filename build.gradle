@@ -1,7 +1,7 @@
 plugins {
     id "groovy"
-    id "io.micronaut.application" version "3.6.6"
-    id "com.github.ben-manes.versions" version "0.44.0"
+    id "io.micronaut.application" version "3.7.0"
+    id "com.github.ben-manes.versions" version "0.45.0"
 }
 
 group "com.exacaster.deltafetch"
@@ -16,7 +16,7 @@ java {
 }
 
 micronaut {
-    version = "3.5.1"
+    version = "3.8.3"
     runtime "netty"
 }
 mainClassName = "com.exacaster.deltafetch.Application"
@@ -27,7 +27,7 @@ dependencies {
     implementation "io.micronaut.security:micronaut-security-oauth2"
     implementation "io.micronaut.security:micronaut-security-jwt"
     implementation "io.micronaut.reactor:micronaut-reactor"
-    implementation "com.nimbusds:nimbus-jose-jwt:9.25"
+    implementation "com.nimbusds:nimbus-jose-jwt:9.30.1"
     runtimeOnly "io.micronaut:micronaut-management"
 
     // Delta reading
@@ -50,7 +50,7 @@ test {
 }
 
 tasks.named("dockerfile") {
-    baseImage = "gcr.io/distroless/java11-debian11:latest"
+    baseImage = "gcr.io/distroless/java11:latest"
 }
 
 tasks.named("dockerBuild") {

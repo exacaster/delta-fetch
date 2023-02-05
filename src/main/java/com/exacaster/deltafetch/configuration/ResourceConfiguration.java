@@ -1,16 +1,16 @@
 package com.exacaster.deltafetch.configuration;
 
+import static io.micronaut.core.convert.format.MapFormat.MapTransformation.FLAT;
+import static io.micronaut.core.naming.conventions.StringConvention.RAW;
+
 import io.micronaut.context.annotation.ConfigurationInject;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.convert.format.MapFormat;
-
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-
-import static io.micronaut.core.convert.format.MapFormat.MapTransformation.FLAT;
-import static io.micronaut.core.naming.conventions.StringConvention.RAW;
+import java.util.Optional;
+import javax.annotation.Nullable;
 
 @Introspected
 @ConfigurationProperties("app")
@@ -43,11 +43,18 @@ public class ResourceConfiguration {
 
         private final List<FilterVariable> filterVariables;
 
-        public Resource(String path, String deltaPath, String schemaPath, List<FilterVariable> filterVariables) {
+        private final ResponseType responseType;
+
+        private final Integer maxResults;
+
+        public Resource(String path, String deltaPath, String schemaPath, List<FilterVariable> filterVariables,
+                ResponseType responseType, Integer maxResults) {
             this.path = path;
             this.deltaPath = deltaPath;
             this.schemaPath = schemaPath;
             this.filterVariables = filterVariables;
+            this.responseType = Optional.ofNullable(responseType).orElse(ResponseType.SINGLE);
+            this.maxResults = Optional.ofNullable(maxResults).orElse(100);
         }
 
         public String getPath() {
@@ -64,6 +71,14 @@ public class ResourceConfiguration {
 
         public List<FilterVariable> getFilterVariables() {
             return filterVariables;
+        }
+
+        public ResponseType getResponseType() {
+            return responseType;
+        }
+
+        public Integer getMaxResults() {
+            return maxResults;
         }
     }
 
