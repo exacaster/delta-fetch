@@ -2,6 +2,14 @@ package com.exacaster.deltafetch.search.parquet;
 
 import com.exacaster.deltafetch.search.ColumnValueFilter;
 import com.exacaster.deltafetch.search.parquet.readsupport.MapReadSupport;
+import com.exacaster.deltafetch.search.parquet.readsupport.ParquetIterator;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Streams;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.filter2.compat.FilterCompat;
@@ -11,11 +19,6 @@ import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.io.api.Binary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public class ParquetLookupReader {
     private final static Logger LOG = LoggerFactory.getLogger(ParquetLookupReader.class);
@@ -28,18 +31,13 @@ public class ParquetLookupReader {
         this.conf = conf;
     }
 
-    public Optional<Map<String, Object>> findFirst(List<ColumnValueFilter> filters) {
+    public Stream<Map<String, Object>> find(List<ColumnValueFilter> filters, int limit) {
         LOG.debug("Reading: {} with filters {}", path, filters);
         try (var reader = prepareReader(filters)) {
-            var result = reader.read();
-            if (result != null) {
-                LOG.debug("Found: {}", result);
-                return Optional.of(result);
-            }
+            return Streams.stream(Iterators.limit(new ParquetIterator(reader), limit));
         } catch (IOException e) {
-            throw new IllegalStateException("Failed reading file", e);
+            throw new IllegalStateException("Failed building reader", e);
         }
-        return Optional.empty();
     }
 
     private ParquetReader<Map<String, Object>> prepareReader(List<ColumnValueFilter> filters) throws IOException {

@@ -18,14 +18,14 @@ class SearchServiceTest extends Specification {
         def path = getClass().getResource("/test_data").toString()
 
         when:
-        def result = svc.findOne(path, [new ColumnValueFilter("user_id", "912740210653_1451011")], true)
+        def result = svc.find(path, [new ColumnValueFilter("user_id", "912740210653_1451011")], true, 1).findFirst()
 
         then:
         result.isPresent()
         result.get().getValue().get("user_id") == "912740210653_1451011"
 
         when: "searching with non-existent value"
-        result = svc.findOne(path, [new ColumnValueFilter("user_id", "none")], true)
+        result = svc.find(path, [new ColumnValueFilter("user_id", "none")], true, 1).findFirst()
 
         then: "returns empty"
         result.isEmpty()
