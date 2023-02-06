@@ -54,7 +54,7 @@ public class ResourceConfiguration {
             this.schemaPath = schemaPath;
             this.filterVariables = filterVariables;
             this.responseType = Optional.ofNullable(responseType).orElse(ResponseType.SINGLE);
-            this.maxResults = Optional.ofNullable(maxResults).orElse(100);
+            this.maxResults = maxResults;
         }
 
         public String getPath() {
@@ -77,7 +77,7 @@ public class ResourceConfiguration {
             return responseType;
         }
 
-        public Integer getMaxResults() {
+        public @Nullable Integer getMaxResults() {
             return maxResults;
         }
     }
