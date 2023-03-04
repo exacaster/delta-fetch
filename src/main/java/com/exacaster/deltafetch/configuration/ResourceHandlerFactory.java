@@ -1,7 +1,5 @@
 package com.exacaster.deltafetch.configuration;
 
-import static com.exacaster.deltafetch.configuration.ResponseType.LIST;
-
 import com.exacaster.deltafetch.rest.RequestHandler;
 import com.exacaster.deltafetch.rest.Router;
 import com.exacaster.deltafetch.rest.resource.ListResourceRequestHandler;
@@ -11,13 +9,19 @@ import com.exacaster.deltafetch.search.SearchService;
 import com.exacaster.deltafetch.search.delta.DeltaMetaReader;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
+import org.apache.hadoop.conf.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.hadoop.conf.Configuration;
+
+import static com.exacaster.deltafetch.configuration.ResponseType.LIST;
 
 @Factory
 public class ResourceHandlerFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceHandlerFactory.class);
 
     @Bean
     public Router router(SearchService searchService,
@@ -26,6 +30,7 @@ public class ResourceHandlerFactory {
         return new Router(configuration.getResources().stream()
                 .flatMap(resource -> {
                     List<RequestHandler> handlers = new ArrayList<>();
+                    LOG.info("Registering resource handler for {}", resource);
                     if (LIST.equals(resource.getResponseType())) {
                         handlers.add(new ListResourceRequestHandler(searchService, resource));
                     } else {

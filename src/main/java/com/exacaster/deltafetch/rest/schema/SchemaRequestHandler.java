@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import static com.exacaster.deltafetch.rest.RequestUtils.buildDeltaPath;
 import static com.exacaster.deltafetch.rest.RequestUtils.isRequestForLatestData;
+import static java.util.Objects.requireNonNull;
 
 public class SchemaRequestHandler implements RequestHandler<Schema> {
     private final DeltaMetaReader metaReader;
@@ -22,12 +23,14 @@ public class SchemaRequestHandler implements RequestHandler<Schema> {
 
     public SchemaRequestHandler(DeltaMetaReader metaReader, ResourceConfiguration.Resource resource) {
         this.metaReader = metaReader;
-        this.schemaUriMatcher = new UriMatchTemplate(resource.getSchemaPath());
+        this.schemaUriMatcher = new UriMatchTemplate(
+                requireNonNull(resource.getSchemaPath(), "Schema path cannot be null")
+        );
         this.resource = resource;
     }
 
     @Override
-    public Optional<ApiResponse<Schema>> handle(HttpRequest request) {
+    public Optional<ApiResponse<Schema>> handle(HttpRequest<Void> request) {
         var path = request.getPath();
         var exact = isRequestForLatestData(request);
         return schemaUriMatcher.match(path)

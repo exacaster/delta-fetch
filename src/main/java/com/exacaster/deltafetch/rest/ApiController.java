@@ -16,7 +16,7 @@ public class ApiController {
     }
 
     @Get(value = "/{+path*}", consumes = MediaType.ALL)
-    public Optional<ApiResponse> index(HttpRequest request) {
+    public Optional<ApiResponse<?>> index(HttpRequest<Void> request) {
         return router.route(request);
     }
 }

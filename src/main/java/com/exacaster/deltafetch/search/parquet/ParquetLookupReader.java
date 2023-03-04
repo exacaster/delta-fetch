@@ -5,11 +5,6 @@ import com.exacaster.deltafetch.search.parquet.readsupport.MapReadSupport;
 import com.exacaster.deltafetch.search.parquet.readsupport.ParquetIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Streams;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.filter2.compat.FilterCompat;
@@ -20,8 +15,14 @@ import org.apache.parquet.io.api.Binary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 public class ParquetLookupReader {
-    private final static Logger LOG = LoggerFactory.getLogger(ParquetLookupReader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ParquetLookupReader.class);
 
     private final String path;
     private final Configuration conf;

@@ -5,6 +5,18 @@ Delta Lake tables.
 
 ## Configuration
 
+### Cache
+Service caches Delta table index (value ranges) after the first request to resource API is made.
+After the first request, following requests are using in-memory index to find Parquet files
+that potentially contain desired value. You can force the service to update the index by adding `?exact=true` query
+param, when making a HTTP request. You can also enable background process, which will updated cached index
+on your specified interval:
+
+```yaml
+app:
+  cache-update-interval: 10m
+```
+
 ### Routes
 Resources can be configured in the following way:
 ```yaml
@@ -13,6 +25,7 @@ app:
     - path: /api/data/{table}/{identifier}
       schema-path: /api/schemas/{table}/{identifier}
       delta-path: s3a://bucket/delta/{table}/
+      response-type: SINGLE
       filter-variables:
         - column: id
           path-variable: {identifier}
@@ -21,6 +34,8 @@ app:
 - `path` property defines API path which will be used to query your Delta tables. Path variables can be defined by using curly braces as shown in the example.
 - `schema-path` (optional) property can be used to define API path for Delta table schema.
 - `delta-path` property defines S3 path of your Delta table. Path variables on this path will be filled in by variables provided in API path.
+- `response-type` (optional, default: `SINGLE`) property defines weather to search for multiple resources, or a single one. Use `LIST` type for multiple resources.
+- `max-results` (optional, default: `100`) maximum number of rows that can be returned in case of `LIST` `response-type`.
 - `filter-variables` (optional) additional filters applied to Delta table.
 
 ### Security

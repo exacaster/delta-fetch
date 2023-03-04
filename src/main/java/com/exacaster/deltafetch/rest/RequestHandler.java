@@ -5,5 +5,5 @@ import io.micronaut.http.HttpRequest;
 import java.util.Optional;
 
 public interface RequestHandler<T> {
-    Optional<ApiResponse<T>> handle(HttpRequest request);
+    Optional<ApiResponse<T>> handle(HttpRequest<Void> request);
 }
