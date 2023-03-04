@@ -1,16 +1,18 @@
 package com.exacaster.deltafetch.configuration;
 
-import static io.micronaut.core.convert.format.MapFormat.MapTransformation.FLAT;
-import static io.micronaut.core.naming.conventions.StringConvention.RAW;
-
 import io.micronaut.context.annotation.ConfigurationInject;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.core.convert.format.MapFormat;
+
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.annotation.Nullable;
+import java.util.StringJoiner;
+
+import static io.micronaut.core.convert.format.MapFormat.MapTransformation.FLAT;
+import static io.micronaut.core.naming.conventions.StringConvention.RAW;
 
 @Introspected
 @ConfigurationProperties("app")
@@ -19,7 +21,10 @@ public class ResourceConfiguration {
     private final List<Resource> resources;
 
     @ConfigurationInject
-    public ResourceConfiguration(@MapFormat(transformation = FLAT, keyFormat = RAW) Map<String, String> hadoopProps, List<Resource> resources) {
+    public ResourceConfiguration(
+            @MapFormat(transformation = FLAT, keyFormat = RAW) Map<String, String> hadoopProps,
+            List<Resource> resources
+    ) {
         this.hadoopProps = hadoopProps;
         this.resources = resources;
     }
@@ -80,6 +85,18 @@ public class ResourceConfiguration {
         public @Nullable Integer getMaxResults() {
             return maxResults;
         }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", Resource.class.getSimpleName() + "[", "]")
+                    .add("path='" + path + "'")
+                    .add("deltaPath='" + deltaPath + "'")
+                    .add("schemaPath='" + schemaPath + "'")
+                    .add("filterVariables=" + filterVariables)
+                    .add("responseType=" + responseType)
+                    .add("maxResults=" + maxResults)
+                    .toString();
+        }
     }
 
     @Introspected
@@ -110,6 +127,16 @@ public class ResourceConfiguration {
 
         public String getPathVariable() {
             return pathVariable;
+        }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", FilterVariable.class.getSimpleName() + "[", "]")
+                    .add("column='" + column + "'")
+                    .add("pathColumn='" + pathColumn + "'")
+                    .add("staticValue='" + staticValue + "'")
+                    .add("pathVariable='" + pathVariable + "'")
+                    .toString();
         }
     }
 }

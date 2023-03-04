@@ -8,7 +8,7 @@ import io.micronaut.security.rules.AbstractSecurityRule;
 import io.micronaut.security.rules.SecurityRuleResult;
 import io.micronaut.security.token.RolesFinder;
 import io.micronaut.web.router.RouteMatch;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
@@ -49,7 +49,8 @@ public class ClaimBasedCheck extends AbstractSecurityRule {
             var allowed = matcher.match(request.getUri())
                     .stream()
                     .flatMap(info -> allowedClaims.stream()
-                            .map(claim -> StrSubstitutor.replace(claim, info.getVariableValues(), "{", "}")))
+                            .map(claim -> StringSubstitutor
+                                    .replace(claim, info.getVariableValues(), "{", "}")))
                     .anyMatch(scopes::contains);
             if (allowed) {
                 return Mono.just(SecurityRuleResult.ALLOWED);

@@ -1,27 +1,28 @@
 package com.exacaster.deltafetch.rest.resource;
 
-import static com.exacaster.deltafetch.rest.RequestUtils.buildDeltaPath;
-import static com.exacaster.deltafetch.rest.RequestUtils.isRequestForLatestData;
-import static java.util.Optional.ofNullable;
-
 import com.exacaster.deltafetch.configuration.ResourceConfiguration.Resource;
 import com.exacaster.deltafetch.search.ColumnValueFilter;
 import com.exacaster.deltafetch.search.SearchService;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.uri.UriMatchInfo;
 import io.micronaut.http.uri.UriMatchTemplate;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 
-public class ResourceRequestHandler {
+import static com.exacaster.deltafetch.rest.RequestUtils.buildDeltaPath;
+import static com.exacaster.deltafetch.rest.RequestUtils.isRequestForLatestData;
+import static java.util.Optional.ofNullable;
+
+public class RequestLookup {
     private final SearchService searchService;
     private final Resource resource;
     private final UriMatchTemplate resourceTemplate;
 
-    public ResourceRequestHandler(SearchService searchService, Resource resource) {
+    public RequestLookup(SearchService searchService, Resource resource) {
         this.searchService = searchService;
         this.resource = resource;
         this.resourceTemplate = new UriMatchTemplate(resource.getPath());
@@ -48,6 +49,7 @@ public class ResourceRequestHandler {
                         ofNullable(variable.getPathVariable())
                                 .map(key -> info.getVariableValues().get(key))
                                 .map(Object::toString)
-                                .orElse(variable.getStaticValue()))).collect(Collectors.toList());
+                                .orElse(variable.getStaticValue())))
+                .collect(Collectors.toList());
     }
 }

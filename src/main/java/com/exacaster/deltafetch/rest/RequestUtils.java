@@ -2,7 +2,7 @@ package com.exacaster.deltafetch.rest;
 
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.uri.UriMatchInfo;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 
 public final class RequestUtils {
     private RequestUtils() {
@@ -13,6 +13,6 @@ public final class RequestUtils {
     }
 
     public static String buildDeltaPath(String deltaPtahTemplate, UriMatchInfo info) {
-        return StrSubstitutor.replace(deltaPtahTemplate, info.getVariableValues(), "{", "}");
+        return StringSubstitutor.replace(deltaPtahTemplate, info.getVariableValues(), "{", "}");
     }
 }

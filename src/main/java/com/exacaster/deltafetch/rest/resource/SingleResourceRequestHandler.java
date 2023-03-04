@@ -8,16 +8,17 @@ import io.micronaut.http.HttpRequest;
 import java.util.Map;
 import java.util.Optional;
 
-public class SingleResourceRequestHandler extends ResourceRequestHandler implements
-        RequestHandler<Map<String, Object>> {
+public class SingleResourceRequestHandler implements RequestHandler<Map<String, Object>> {
+
+    private final RequestLookup lookup;
 
     public SingleResourceRequestHandler(SearchService searchService, Resource resource) {
-        super(searchService, resource);
+        this.lookup = new RequestLookup(searchService, resource);
     }
 
     @Override
-    public Optional<ApiResponse<Map<String, Object>>> handle(HttpRequest request) {
-        return handleStream(request, 1)
+    public Optional<ApiResponse<Map<String, Object>>> handle(HttpRequest<Void> request) {
+        return lookup.handleStream(request, 1)
                 .findFirst()
                 .map(pair -> new ApiResponse<>(pair.getKey(), pair.getValue()));
     }
