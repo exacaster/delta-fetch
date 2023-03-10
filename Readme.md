@@ -3,6 +3,9 @@
 HTTP API for [Delta Lake](https://delta.io/). Delta Fetch allows to configure HTTP endpoints to retrieve rows from
 Delta Lake tables.
 
+- :building_construction: [How it works?](./docs/architecture.md)
+- :bangbang: [Storage recommendations](./docs/recommendations.md)
+
 ## Configuration
 
 ### Cache
@@ -28,7 +31,7 @@ app:
       response-type: SINGLE
       filter-variables:
         - column: id
-          path-variable: {identifier}
+          path-variable: identifier
 ```
 
 - `path` property defines API path which will be used to query your Delta tables. Path variables can be defined by using curly braces as shown in the example.
