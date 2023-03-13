@@ -6,6 +6,28 @@ Delta Lake tables.
 - :building_construction: [How it works?](./docs/architecture.md)
 - :bangbang: [Storage recommendations](./docs/recommendations.md)
 
+## Benchmarks
+
+After applying methods mentioned in [storage recommendations](./docs/recommendations.md) you can easly achieve fetch times that are around 1s on any amount of data since it scales horizontally pretty good.
+
+### Example
+
+Delta table that in S3 looks like this:
+
+![Delta table structure on S3](./docs/s3_delta_example.png "Delta table structure on S3")
+
+It has 24498176 records. Here are few examples of the requests time it took to serve a requests (using file index cache):
+```
+time curl http://localhost:8080/api/data/disable_optimize_ordered/872480210503_234678
+{"version":5,"data":{"user_id":"872480210503_234678","sub_type":"PREPAID","activation_date":"2018-09-01","status":"ACTIVE","deactivation_date":"9999-01-01"}}curl   0.00s user 0.01s system 1% cpu 0.982 total
+---
+time curl http://localhost:8080/api/data/disable_optimize_ordered/579520210231_237911
+{"version":5,"data":{"user_id":"579520210231_237911","sub_type":"PREPAID","activation_date":"2018-06-24","status":"ACTIVE","deactivation_date":"9999-01-01"}}curl   0.00s user 0.01s system 0% cpu 1.250 total
+---
+➜  ~ time curl http://localhost:8080/api/data/disable_optimize_ordered/875540210000_245810
+{"version":2,"data":{"user_id":"875540210000_245810","sub_type":"PREPAID","activation_date":"2018-09-01","status":"ACTIVE","deactivation_date":"9999-01-01"}}curl   0.00s user 0.01s system 1% cpu 0.870 total
+```
+
 ## Configuration
 
 ### Cache
