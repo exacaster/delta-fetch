@@ -1,7 +1,7 @@
 plugins {
     id "groovy"
     id "io.micronaut.application" version "3.7.0"
-    id "com.github.ben-manes.versions" version "0.45.0"
+    id "com.github.ben-manes.versions" version "0.46.0"
 }
 
 group "com.exacaster.deltafetch"
