@@ -9,4 +9,4 @@ on:
 
 jobs:
   build-java:
-    uses: exacaster/lighter/.github/workflows/build-java.yml@main
+    uses: exacaster/delta-fetch/.github/workflows/build-java.yml@main

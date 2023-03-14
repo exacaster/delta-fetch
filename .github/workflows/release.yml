@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-java:
-    uses: exacaster/lighter/.github/workflows/build-java.yml@main
+    uses: exacaster/delta-fetch/.github/workflows/build-java.yml@main
   publish-registry:
-    uses: exacaster/lighter/.github/workflows/publish-registry.yml@main
+    uses: exacaster/delta-fetch/.github/workflows/publish-registry.yml@main
     needs: [ build-java ]
