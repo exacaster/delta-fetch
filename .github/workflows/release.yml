@@ -1,0 +1,12 @@
+name: Release new version
+on:
+  release:
+    types:
+      - released
+
+jobs:
+  build-java:
+    uses: exacaster/delta-fetch/.github/workflows/build-java.yml@main
+  publish-registry:
+    uses: exacaster/delta-fetch/.github/workflows/publish-registry.yml@main
+    needs: [ build-java ]
