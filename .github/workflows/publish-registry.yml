@@ -15,4 +15,5 @@ jobs:
       - uses: docker/build-push-action@v3
         with:
           push: true
+          context: ./build/docker/main
           tags: ghcr.io/exacaster/delta-fetch:${{ github.event.release.tag_name }}
