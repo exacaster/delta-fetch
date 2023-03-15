@@ -17,6 +17,7 @@ jobs:
       - name: Build with Gradle
         run: |
           ./gradlew build dockerfile
+          touch ./build/docker/main/layers/classes/.gitkeep
       - uses: actions/upload-artifact@v3
         with:
           name: docker-artifacts
