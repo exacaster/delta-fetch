@@ -27,7 +27,7 @@ dependencies {
     implementation "io.micronaut.security:micronaut-security-oauth2"
     implementation "io.micronaut.security:micronaut-security-jwt"
     implementation "io.micronaut.reactor:micronaut-reactor"
-    implementation "com.nimbusds:nimbus-jose-jwt:9.30.1"
+    implementation "com.nimbusds:nimbus-jose-jwt:9.31"
     runtimeOnly "io.micronaut:micronaut-management"
 
     // Delta reading
