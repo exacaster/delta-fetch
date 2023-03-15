@@ -17,5 +17,6 @@ jobs:
           name: docker-artifacts
       - uses: docker/build-push-action@v3
         with:
+          context: .
           push: true
           tags: ghcr.io/exacaster/delta-fetch:${{ github.event.release.tag_name }}
