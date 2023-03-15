@@ -12,6 +12,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: docker-artifacts
       - uses: docker/build-push-action@v3
         with:
           push: true
