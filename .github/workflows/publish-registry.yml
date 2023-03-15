@@ -18,7 +18,8 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       - uses: docker/build-push-action@v3
+        run: mkdir -p layers/classes
         with:
-          context: ./build/docker/main/
+          context: .
           push: true
           tags: ghcr.io/exacaster/delta-fetch:${{ github.event.release.tag_name }}
