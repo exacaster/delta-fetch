@@ -20,4 +20,4 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: docker-artifacts
-          path: ./build/docker/main
+          path: ./build/docker/main/
