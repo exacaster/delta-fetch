@@ -15,10 +15,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: docker-artifacts
-      - name: Display structure of downloaded files
-        run: ls -R
       - uses: docker/build-push-action@v3
         with:
           push: true
-          context: ./build/docker/main
           tags: ghcr.io/exacaster/delta-fetch:${{ github.event.release.tag_name }}
