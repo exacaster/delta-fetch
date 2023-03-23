@@ -36,7 +36,7 @@ dependencies {
         exclude group: "org.slf4j"
     }
     implementation "org.apache.parquet:parquet-hadoop:1.12.3"
-    implementation("org.apache.hadoop:hadoop-aws:3.3.4") {
+    implementation("org.apache.hadoop:hadoop-aws:3.3.5") {
         exclude group: "org.slf4j"
     }
 
