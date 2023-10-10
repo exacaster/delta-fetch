@@ -31,7 +31,7 @@ dependencies {
     runtimeOnly "io.micronaut:micronaut-management"
 
     // Delta reading
-    implementation "io.delta:delta-standalone_2.12:0.6.0"
+    implementation "io.delta:delta-standalone_2.12:3.0.0rc1"
     implementation("org.apache.hadoop:hadoop-client:3.3.6") {
         exclude group: "org.slf4j"
     }
