@@ -2,9 +2,6 @@ package com.exacaster.deltafetch.search.parquet;
 
 import com.exacaster.deltafetch.search.ColumnValueFilter;
 import com.exacaster.deltafetch.search.parquet.readsupport.MapReadSupport;
-import com.exacaster.deltafetch.search.parquet.readsupport.ParquetIterator;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Streams;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.filter2.compat.FilterCompat;
@@ -16,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,10 +33,22 @@ public class ParquetLookupReader {
     public Stream<Map<String, Object>> find(List<ColumnValueFilter> filters, int limit) {
         LOG.debug("Reading: {} with filters {}", path, filters);
         try (var reader = prepareReader(filters)) {
-            return Streams.stream(Iterators.limit(new ParquetIterator(reader), limit));
+            return readItemsWithLimit(reader, limit).stream();
         } catch (IOException e) {
             throw new IllegalStateException("Failed building reader", e);
         }
+    }
+
+    private List<Map<String, Object>> readItemsWithLimit(ParquetReader<Map<String, Object>> parquetReader, int limit) throws IOException {
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (int i = 0; i < limit; i++) {
+            Map<String, Object> item = parquetReader.read();
+            if (item == null) {
+                break;
+            }
+            data.add(item);
+        }
+        return data;
     }
 
     private ParquetReader<Map<String, Object>> prepareReader(List<ColumnValueFilter> filters) throws IOException {
