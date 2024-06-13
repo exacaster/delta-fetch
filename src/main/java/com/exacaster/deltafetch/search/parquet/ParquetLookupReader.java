@@ -35,7 +35,13 @@ public class ParquetLookupReader {
     public Stream<Map<String, Object>> find(List<ColumnValueFilter> filters, int limit) {
         LOG.debug("Reading: {} with filters {}", path, filters);
         try (var reader = prepareReader(filters)) {
-            return Streams.stream(Iterators.limit(new ParquetIterator(reader), limit));
+            return Streams.stream(Iterators.limit(new ParquetIterator<>(reader), limit)).onClose(() -> {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    LOG.error("Failed to close ParquetReader", e);
+                }
+            });
         } catch (IOException e) {
             throw new IllegalStateException("Failed building reader", e);
         }
