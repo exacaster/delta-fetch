@@ -41,3 +41,12 @@ micronaut:
         enabled: true
         step: PT1M
         descriptions: true
+
+app:
+  hadoop-props:
+    "fs.s3a.connection.maximum": 100
+    "fs.s3a.threads.keepalivetime": 60
+    "fs.s3a.aws.credentials.provider": "com.amazonaws.auth.DefaultAWSCredentialsProviderChain"
+    "fs.s3a.connection.establish.timeout": 50000
+    "fs.s3a.connection.timeout": 200000
+    "fs.s3a.multipart.purge.age": 86400
