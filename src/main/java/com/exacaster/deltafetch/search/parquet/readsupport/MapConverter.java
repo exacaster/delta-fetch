@@ -1,5 +1,7 @@
 package com.exacaster.deltafetch.search.parquet.readsupport;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.Converter;
 import org.apache.parquet.io.api.GroupConverter;
@@ -51,7 +53,7 @@ final class MapConverter extends GroupConverter {
                     @Override
                     public Optional<Converter> visit(
                             LogicalTypeAnnotation.DecimalLogicalTypeAnnotation decimalLogicalType) {
-                        return of(new SimplePrimitiveConverter(field.getName()));
+                            return of(new DecimalConverter(field.getName(), decimalLogicalType.getScale()));
                     }
                 }).orElse(new SimplePrimitiveConverter(field.getName()));
             }
@@ -147,6 +149,30 @@ final class MapConverter extends GroupConverter {
                 record.put(name, array);
             }
             array.add(value.toStringUsingUTF8());
+        }
+    }
+
+    private class DecimalConverter extends PrimitiveConverter {
+        private final String name;
+        private final int scale;
+
+        public DecimalConverter(String name, int scale) {
+            this.name = name;
+            this.scale = scale;
+        }
+
+        @Override
+        public void addBinary(Binary value) {
+            BigInteger unscaledValue = new BigInteger(value.getBytes());
+            BigDecimal decimalValue = new BigDecimal(unscaledValue, scale);
+            record.put(name, decimalValue);
+        }
+
+        @Override
+        public void addLong(long value) {
+            BigInteger unscaledValue = BigInteger.valueOf(value);
+            BigDecimal decimalValue = new BigDecimal(unscaledValue, scale);
+            record.put(name, decimalValue);
         }
     }
 }
