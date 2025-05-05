@@ -4,11 +4,10 @@ import com.exacaster.deltafetch.configuration.ResourceConfiguration;
 import com.exacaster.deltafetch.rest.ApiResponse;
 import com.exacaster.deltafetch.rest.RequestHandler;
 import com.exacaster.deltafetch.search.delta.DeltaMetaReader;
-import io.delta.standalone.types.StructType;
+import io.delta.kernel.types.StructType;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.uri.UriMatchTemplate;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -42,8 +41,8 @@ public class SchemaRequestHandler implements RequestHandler<Schema> {
     }
 
     private Schema toSchema(StructType schema) {
-        var fields = Arrays.stream(schema.getFields())
-                .map(field -> new Field(field.getName(), field.getDataType().getTypeName(), field.isNullable()))
+        var fields = schema.fields().stream()
+                .map(field -> new Field(field.getName(), field.getDataType().toString(), field.isNullable()))
                 .collect(Collectors.toList());
         return new Schema(fields);
     }

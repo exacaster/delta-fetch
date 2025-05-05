@@ -1,6 +1,6 @@
 package com.exacaster.deltafetch.search.delta;
 
-import io.delta.standalone.types.StructType;
+import io.delta.kernel.types.StructType;
 
 import java.util.Map;
 import java.util.StringJoiner;
