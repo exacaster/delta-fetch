@@ -1,4 +1,9 @@
 micronaut:
+  executors:
+    api:
+      type: FIXED
+      nThreads: ${API_EXECUTOR_THREADS:24}
+
   security:
     enabled: ${app.security.enabled:false}
     filter:
