@@ -4,6 +4,7 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ public class ApiController {
     }
 
     @Get(value = "/{+path*}", consumes = MediaType.ALL)
+    @ExecuteOn("api")
     public Optional<ApiResponse<?>> index(HttpRequest<Void> request) {
         return router.route(request);
     }
