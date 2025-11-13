@@ -59,8 +59,12 @@ tasks.named("dockerBuild") {
     images = [getImage()]
 }
 
-tasks.named("dockerBuildNative") {
-    dependsOn "buildNativeLayersTask"
+tasks.named("buildLayers") {
+    doLast {
+        def classesDir = file("${buildDir}/docker/main/layers/classes")
+        classesDir.mkdirs()
+        file("${classesDir}/.gitkeep").text = ""
+    }
 }
 
 def getImage() {
