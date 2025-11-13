@@ -50,12 +50,10 @@ test {
 }
 
 tasks.named("dockerfile") {
-    dependsOn "buildLayers"
     baseImage = "gcr.io/distroless/java11:latest"
 }
 
 tasks.named("dockerBuild") {
-    dependsOn "buildLayers"
     images = [getImage()]
 }
 
