@@ -12,7 +12,7 @@ with the `...?exact=true` query parameter.
 - Delta Fetch reads Delta table metadata from file storage and stores it in memory.
 - Delta Fetch finds the relevant file paths in the stored metadata and starts reading them.
 - Delta Fetch uses the Hadoop Parquet Reader implementation, which supports filter push down to avoid reading the entire file.
-- Delta Fetch continues reading Parquet files one by one until the requested or configured limit is reached.
+- Delta Fetch reads all relevant Parquet files in parallel using a dedicated thread pool, then applies the requested or configured limit to the combined results.
 
 ## Considerations
 Although, we have been using [open source](https://delta.io/) version of Delta table, Delta Fetch should also work with

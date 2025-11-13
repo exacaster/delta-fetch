@@ -63,6 +63,25 @@ app:
 - `max-results` (optional, default: `100`) maximum number of rows that can be returned in case of `LIST` `response-type`.
 - `filter-variables` (optional) additional filters applied to Delta table.
 
+### Thread Pools
+Delta Fetch uses dedicated thread pools for handling API requests and Parquet file reading:
+
+```yaml
+micronaut:
+  executors:
+    api:
+      type: FIXED
+      nThreads: ${API_EXECUTOR_THREADS:24}
+    parquet-reader:
+      type: FIXED
+      nThreads: ${PARQUET_READER_THREADS:30}
+```
+
+- `api` executor handles incoming HTTP requests. Default: 24 threads.
+- `parquet-reader` executor reads Parquet files in parallel for faster response times. Default: 30 threads.
+
+You can tune these values based on your workload and available CPU cores. The `parquet-reader` pool is shared across all concurrent API requests, so size it accordingly if you expect high concurrency.
+
 ### Security
 Delta Fetch currently supports two authorization mechanisms.
 
