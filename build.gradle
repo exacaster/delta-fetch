@@ -50,11 +50,17 @@ test {
 }
 
 tasks.named("dockerfile") {
+    dependsOn "buildLayers"
     baseImage = "gcr.io/distroless/java11:latest"
 }
 
 tasks.named("dockerBuild") {
+    dependsOn "buildLayers"
     images = [getImage()]
+}
+
+tasks.named("dockerBuildNative") {
+    dependsOn "buildNativeLayersTask"
 }
 
 def getImage() {
