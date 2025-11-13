@@ -51,18 +51,16 @@ test {
 
 tasks.named("dockerfile") {
     baseImage = "gcr.io/distroless/java11:latest"
+    doLast {
+        def dockerFile = file("${buildDir}/docker/main/Dockerfile")
+        def content = dockerFile.text
+        content = content.replaceAll("COPY layers/classes.*\n", "")
+        dockerFile.text = content
+    }
 }
 
 tasks.named("dockerBuild") {
     images = [getImage()]
-}
-
-tasks.named("buildLayers") {
-    doLast {
-        def classesDir = file("${buildDir}/docker/main/layers/classes")
-        classesDir.mkdirs()
-        file("${classesDir}/.gitkeep").text = ""
-    }
 }
 
 def getImage() {
