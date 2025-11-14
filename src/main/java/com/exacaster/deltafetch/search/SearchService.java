@@ -5,7 +5,9 @@ import com.exacaster.deltafetch.search.delta.DeltaMetaReader;
 import com.exacaster.deltafetch.search.delta.FileStats;
 import com.exacaster.deltafetch.search.delta.PathFinder;
 import com.exacaster.deltafetch.search.parquet.ParquetLookupReader;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class SearchService {
     private static final Logger LOG = LoggerFactory.getLogger(SearchService.class);
+    private static final long SEARCH_TIMEOUT_SECONDS = 30;
 
     private final DeltaMetaReader deltaMetaReader;
     private final Configuration conf;
@@ -63,9 +66,9 @@ public class SearchService {
             CompletableFuture<Void> allFutures = CompletableFuture.allOf(
                 futures.toArray(new CompletableFuture[0])
             );
-            allFutures.get(30, TimeUnit.SECONDS);
+            allFutures.get(SEARCH_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            LOG.error("Parallel search timed out after 30 seconds for {} files", paths.size());
+            LOG.error("Parallel search timed out after {} seconds for {} files", SEARCH_TIMEOUT_SECONDS, paths.size());
             throw new RuntimeException("Search operation timed out", e);
         } catch (Exception e) {
             LOG.error("Parallel search failed", e);
