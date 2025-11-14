@@ -4,6 +4,7 @@ import com.exacaster.deltafetch.search.delta.DeltaMetaReader
 import io.micronaut.cache.SyncCache
 import org.apache.hadoop.conf.Configuration
 import spock.lang.Specification
+import java.util.concurrent.Executors
 
 class SearchServiceTest extends Specification {
 
@@ -14,7 +15,8 @@ class SearchServiceTest extends Specification {
         }
         def conf = new Configuration()
         def statsReader = new DeltaMetaReader(conf, cache)
-        def svc = new SearchService(statsReader, new Configuration())
+        def executorService = Executors.newFixedThreadPool(2)
+        def svc = new SearchService(statsReader, new Configuration(), executorService)
         def path = getClass().getResource("/test_data").toString()
 
         when:
@@ -29,6 +31,9 @@ class SearchServiceTest extends Specification {
 
         then: "returns empty"
         result.isEmpty()
+
+        cleanup:
+        executorService.shutdown()
     }
     def worksWithDifferentTypes() {
         given:
@@ -37,7 +42,8 @@ class SearchServiceTest extends Specification {
         }
         def conf = new Configuration()
         def statsReader = new DeltaMetaReader(conf, cache)
-        def svc = new SearchService(statsReader, new Configuration())
+        def executorService = Executors.newFixedThreadPool(2)
+        def svc = new SearchService(statsReader, new Configuration(), executorService)
         def path = getClass().getResource("/test_data_types").toString()
 
         when:
@@ -53,5 +59,8 @@ class SearchServiceTest extends Specification {
         result.get().getValue().get("trait_int") == 12345
         result.get().getValue().get("trait_bigint") == 123456789012345
         result.get().getValue().get("trait_boolean") == true
+
+        cleanup:
+        executorService.shutdown()
     }
 }
