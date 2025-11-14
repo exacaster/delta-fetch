@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 public class SearchService {
     private static final Logger LOG = LoggerFactory.getLogger(SearchService.class);
     private static final long SEARCH_TIMEOUT_SECONDS = 30;
+    private static final long FILE_READ_TIMEOUT_SECONDS = 3;
 
     private final DeltaMetaReader deltaMetaReader;
     private final Configuration conf;
@@ -63,6 +64,15 @@ public class SearchService {
                         return Collections.<Map<String, Object>>emptyList();
                     }
                 }, executorService)
+                .orTimeout(FILE_READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .exceptionally(e -> {
+                    if (e instanceof java.util.concurrent.TimeoutException) {
+                        LOG.warn("Timeout reading {} after {} seconds", filePath, FILE_READ_TIMEOUT_SECONDS);
+                    } else {
+                        LOG.error("Error reading {}", filePath, e);
+                    }
+                    return Collections.emptyList();
+                })
             )
             .collect(Collectors.toList());
 
