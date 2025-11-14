@@ -34,7 +34,8 @@ public class ParquetLookupReader {
 
     public Stream<Map<String, Object>> find(List<ColumnValueFilter> filters, int limit) {
         LOG.debug("Reading: {} with filters {}", path, filters);
-        try (var reader = prepareReader(filters)) {
+        try {
+            var reader = prepareReader(filters);
             return Streams.stream(Iterators.limit(new ParquetIterator<>(reader), limit)).onClose(() -> {
                 try {
                     reader.close();
