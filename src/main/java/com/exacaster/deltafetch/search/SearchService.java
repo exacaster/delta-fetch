@@ -51,12 +51,13 @@ public class SearchService {
                 CompletableFuture.supplyAsync(() -> {
                     try {
                         var reader = new ParquetLookupReader(conf, path + "/" + filePath);
-                        List<Map<String, Object>> fileResults = reader.find(filters, limit)
-                            .collect(Collectors.toList());
-                        if (!fileResults.isEmpty()) {
-                            LOG.debug("Read {} results from {}", fileResults.size(), filePath);
+                        try (Stream<Map<String, Object>> stream = reader.find(filters, limit)) {
+                            List<Map<String, Object>> fileResults = stream.collect(Collectors.toList());
+                            if (!fileResults.isEmpty()) {
+                                LOG.debug("Read {} results from {}", fileResults.size(), filePath);
+                            }
+                            return fileResults;
                         }
-                        return fileResults;
                     } catch (Exception e) {
                         LOG.error("Error reading {}: {}", filePath, e.getMessage());
                         return Collections.<Map<String, Object>>emptyList();
