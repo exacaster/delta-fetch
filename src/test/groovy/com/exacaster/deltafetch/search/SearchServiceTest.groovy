@@ -63,4 +63,73 @@ class SearchServiceTest extends Specification {
         cleanup:
         executorService.shutdown()
     }
+
+    def "should respect limit and not exceed queue capacity"() {
+        given: "a search service with test data (15 records available)"
+        def cache = Mock(SyncCache) {
+            get(*_) >> Optional.empty()
+        }
+        def conf = new Configuration()
+        def statsReader = new DeltaMetaReader(conf, cache)
+        def executorService = Executors.newFixedThreadPool(4)
+        def svc = new SearchService(statsReader, new Configuration(), executorService)
+        def path = getClass().getResource("/test_data").toString()
+
+        when: "requesting a small limit"
+        def results = svc.find(path, [], true, 5).toList()
+
+        then: "returns exactly the limit (not more, not less)"
+        results.size() == 5
+        and: "all results are valid"
+        results.every { it.getValue() != null }
+
+        cleanup:
+        executorService.shutdown()
+    }
+
+    def "should handle concurrent file reads without race conditions"() {
+        given: "a search service with multiple parallel workers (15 records available)"
+        def cache = Mock(SyncCache) {
+            get(*_) >> Optional.empty()
+        }
+        def conf = new Configuration()
+        def statsReader = new DeltaMetaReader(conf, cache)
+        def executorService = Executors.newFixedThreadPool(10)
+        def svc = new SearchService(statsReader, new Configuration(), executorService)
+        def path = getClass().getResource("/test_data").toString()
+
+        when: "reading with high parallelism and limit near total"
+        def results = svc.find(path, [], true, 12).toList()
+
+        then: "returns exactly the limit, proving no race condition caused over-collection"
+        results.size() == 12
+        and: "all results are valid with no duplicates"
+        results.every { it.getValue() != null }
+        def userIds = results.collect { it.getValue().get("user_id") }
+        userIds.unique().size() == userIds.size()
+
+        cleanup:
+        executorService.shutdown()
+    }
+
+    def "should handle empty results gracefully"() {
+        given: "a search service"
+        def cache = Mock(SyncCache) {
+            get(*_) >> Optional.empty()
+        }
+        def conf = new Configuration()
+        def statsReader = new DeltaMetaReader(conf, cache)
+        def executorService = Executors.newFixedThreadPool(2)
+        def svc = new SearchService(statsReader, new Configuration(), executorService)
+        def path = getClass().getResource("/test_data").toString()
+
+        when: "searching with filters that match nothing"
+        def results = svc.find(path, [new ColumnValueFilter("user_id", "nonexistent_user_123456789")], true, 10).toList()
+
+        then: "returns empty list"
+        results.isEmpty()
+
+        cleanup:
+        executorService.shutdown()
+    }
 }
