@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Named;
@@ -24,8 +25,8 @@ import reactor.core.scheduler.Schedulers;
 @Singleton
 public class SearchService {
     private static final Logger LOG = LoggerFactory.getLogger(SearchService.class);
-    private static final long SEARCH_TIMEOUT_SECONDS = 30;
-    private static final long FILE_READ_TIMEOUT_SECONDS = 3;
+    private static final Duration SEARCH_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration FILE_READ_TIMEOUT = Duration.ofSeconds(3);
     private static final int MAX_CONCURRENCY = 5;
 
 
@@ -53,26 +54,21 @@ public class SearchService {
 
         List<Map<String, Object>> results = Flux.fromIterable(paths)
             .flatMap(filePath -> readFile(path, filePath, filters, limit)
-                .timeout(Duration.ofSeconds(FILE_READ_TIMEOUT_SECONDS))
+                .timeout(FILE_READ_TIMEOUT)
+                .onErrorResume(TimeoutException.class, e -> {
+                    LOG.warn("Timeout reading {} after {} seconds", filePath, FILE_READ_TIMEOUT.getSeconds());
+                    return Flux.empty();
+                })
                 .onErrorResume(e -> {
-                    if (e instanceof java.util.concurrent.TimeoutException) {
-                        LOG.warn("Timeout reading {} after {} seconds", filePath, FILE_READ_TIMEOUT_SECONDS);
-                    } else {
-                        LOG.error("Error reading {}: {}", filePath, e.getMessage());
-                    }
+                    LOG.error("Error reading {}", filePath, e);
                     return Flux.empty();
                 }), MAX_CONCURRENCY)
+            .timeout(SEARCH_TIMEOUT)
             .take(limit)
-            .timeout(Duration.ofSeconds(SEARCH_TIMEOUT_SECONDS))
             .collectList()
             .block();
 
-        if (results == null) {
-            LOG.warn("Search timed out or was interrupted for path: {}", path);
-            return Stream.empty();
-        }
-
-        LOG.debug("Read {} total results from {} files", results.size(), paths.size());
+        LOG.debug("Found {} results (searched {} files)", results.size(), paths.size());
 
         return results.stream()
             .map(data -> Pair.of(deltaStats.getVersion(), data));
@@ -92,24 +88,14 @@ public class SearchService {
             List<ColumnValueFilter> filters,
             int limit) {
 
-        return Flux.defer(() -> {
-            LOG.debug("Reading file: {} with limit: {}", filePath, limit);
-            var reader = new ParquetLookupReader(conf, tablePath + "/" + filePath);
-            try {
-                Stream<Map<String, Object>> stream = reader.find(filters, limit);
-                return Flux.fromStream(stream)
-                    .doFinally(signal -> {
-                        try {
-                            stream.close();
-                            LOG.debug("Closed stream for {} with signal: {}", filePath, signal);
-                        } catch (Exception e) {
-                            LOG.warn("Error closing stream for {}: {}", filePath, e.getMessage());
-                        }
-                    });
-            } catch (Exception e) {
-                LOG.error("Error opening file {}: {}", filePath, e.getMessage());
-                return Flux.empty();
-            }
-        }).subscribeOn(scheduler);
+        return Flux.using(
+            () -> {
+                LOG.debug("Reading file: {} with limit: {}", filePath, limit);
+                var reader = new ParquetLookupReader(conf, tablePath + "/" + filePath);
+                return reader.find(filters, limit);
+            },
+            Flux::fromStream,
+            Stream::close
+        ).subscribeOn(scheduler);
     }
 }
