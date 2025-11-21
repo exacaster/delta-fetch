@@ -2,10 +2,10 @@ micronaut:
   executors:
     api:
       type: FIXED
-      nThreads: ${API_EXECUTOR_THREADS:24}
+      nThreads: ${API_EXECUTOR_THREADS:4}
     parquet-reader:
       type: FIXED
-      nThreads: ${PARQUET_READER_THREADS:30}
+      nThreads: ${PARQUET_READER_THREADS:8}
 
   security:
     enabled: ${app.security.enabled:false}

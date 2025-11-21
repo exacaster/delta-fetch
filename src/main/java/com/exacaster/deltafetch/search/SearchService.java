@@ -5,12 +5,10 @@ import com.exacaster.deltafetch.search.delta.DeltaMetaReader;
 import com.exacaster.deltafetch.search.delta.FileStats;
 import com.exacaster.deltafetch.search.delta.PathFinder;
 import com.exacaster.deltafetch.search.parquet.ParquetLookupReader;
-import java.util.Collections;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,22 +18,27 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 @Singleton
 public class SearchService {
     private static final Logger LOG = LoggerFactory.getLogger(SearchService.class);
-    private static final long SEARCH_TIMEOUT_SECONDS = 30;
-    private static final long FILE_READ_TIMEOUT_SECONDS = 3;
+    private static final Duration SEARCH_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration FILE_READ_TIMEOUT = Duration.ofSeconds(3);
+    private static final int MAX_CONCURRENCY = 5;
+
 
     private final DeltaMetaReader deltaMetaReader;
     private final Configuration conf;
-    private final ExecutorService executorService;
+    private final Scheduler scheduler;
 
     public SearchService(DeltaMetaReader deltaMetaReader, Configuration conf,
                         @Named("parquet-reader") ExecutorService executorService) {
         this.deltaMetaReader = deltaMetaReader;
         this.conf = conf;
-        this.executorService = executorService;
+        this.scheduler = Schedulers.fromExecutorService(executorService);
     }
 
     public Stream<Pair<Long, Map<String, Object>>> find(String path, List<ColumnValueFilter> filters,
@@ -47,58 +50,27 @@ public class SearchService {
             return Stream.empty();
         }
 
-        List<CompletableFuture<List<Map<String, Object>>>> futures = paths.stream()
-            .map(filePath ->
-                CompletableFuture.supplyAsync(() -> {
-                    try {
-                        var reader = new ParquetLookupReader(conf, path + "/" + filePath);
-                        try (Stream<Map<String, Object>> stream = reader.find(filters, limit)) {
-                            List<Map<String, Object>> fileResults = stream.collect(Collectors.toList());
-                            if (!fileResults.isEmpty()) {
-                                LOG.debug("Read {} results from {}", fileResults.size(), filePath);
-                            }
-                            return fileResults;
-                        }
-                    } catch (Exception e) {
-                        LOG.error("Error reading {}: {}", filePath, e.getMessage());
-                        return Collections.<Map<String, Object>>emptyList();
-                    }
-                }, executorService)
-                .orTimeout(FILE_READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                .exceptionally(e -> {
-                    if (e instanceof java.util.concurrent.TimeoutException) {
-                        LOG.warn("Timeout reading {} after {} seconds", filePath, FILE_READ_TIMEOUT_SECONDS);
-                    } else {
-                        LOG.error("Error reading {}", filePath, e);
-                    }
-                    return Collections.emptyList();
+        LOG.debug("Starting search across {} files with limit {}", paths.size(), limit);
+
+        List<Map<String, Object>> results = Flux.fromIterable(paths)
+            .flatMap(filePath -> readFile(path, filePath, filters, limit)
+                .timeout(FILE_READ_TIMEOUT)
+                .onErrorResume(TimeoutException.class, e -> {
+                    LOG.warn("Timeout reading {} after {} seconds", filePath, FILE_READ_TIMEOUT.getSeconds());
+                    return Flux.empty();
                 })
-            )
-            .collect(Collectors.toList());
+                .onErrorResume(e -> {
+                    LOG.error("Error reading {}", filePath, e);
+                    return Flux.empty();
+                }), MAX_CONCURRENCY)
+            .timeout(SEARCH_TIMEOUT)
+            .take(limit)
+            .collectList()
+            .block();
 
-        try {
-            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0])
-            );
-            allFutures.get(SEARCH_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            LOG.error("Parallel search timed out after {} seconds for {} files", SEARCH_TIMEOUT_SECONDS, paths.size());
-            throw new RuntimeException("Search operation timed out", e);
-        } catch (Exception e) {
-            LOG.error("Parallel search failed", e);
-            throw new RuntimeException("Search operation failed", e);
-        }
-
-        List<Map<String, Object>> results = futures.stream()
-            .map(CompletableFuture::join)
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
-
-        LOG.debug("Read {} total results from {} files, returning first {}",
-            results.size(), paths.size(), Math.min(results.size(), limit));
+        LOG.debug("Found {} results (searched {} files)", results.size(), paths.size());
 
         return results.stream()
-            .limit(limit)
             .map(data -> Pair.of(deltaStats.getVersion(), data));
     }
 
@@ -108,5 +80,22 @@ public class SearchService {
 
     private Stream<String> findPaths(Map<String, FileStats> fileStats, List<ColumnValueFilter> filters) {
         return new PathFinder(fileStats).findCandidatePaths(filters);
+    }
+
+    private Flux<Map<String, Object>> readFile(
+            String tablePath,
+            String filePath,
+            List<ColumnValueFilter> filters,
+            int limit) {
+
+        return Flux.using(
+            () -> {
+                LOG.debug("Reading file: {} with limit: {}", filePath, limit);
+                var reader = new ParquetLookupReader(conf, tablePath + "/" + filePath);
+                return reader.find(filters, limit);
+            },
+            Flux::fromStream,
+            Stream::close
+        ).subscribeOn(scheduler);
     }
 }
