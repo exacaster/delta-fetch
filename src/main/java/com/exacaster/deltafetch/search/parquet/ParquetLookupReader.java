@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,6 +44,9 @@ public class ParquetLookupReader {
                     LOG.error("Failed to close ParquetReader", e);
                 }
             });
+        } catch (InterruptedIOException e) {
+            LOG.debug("Read interrupted for {}", path);
+            return Stream.empty();
         } catch (IOException e) {
             throw new IllegalStateException("Failed building reader", e);
         }
