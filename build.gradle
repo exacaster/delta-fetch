@@ -27,12 +27,17 @@ dependencies {
     implementation "io.micronaut.security:micronaut-security-oauth2"
     implementation "io.micronaut.security:micronaut-security-jwt"
     implementation "io.micronaut.reactor:micronaut-reactor"
-    implementation "com.nimbusds:nimbus-jose-jwt:9.37.3"
+    // Hadoop 3.4.3 would raise this to 10.x; Micronaut Security 3.x is built against 9.x
+    implementation("com.nimbusds:nimbus-jose-jwt") {
+        version { strictly "9.37.3" }
+    }
+    // Hadoop 3.4.3 brings Netty 4.1.127, whose HTTP compressor needs a newer zstd-jni than parquet provides
+    implementation enforcedPlatform("io.netty:netty-bom:4.1.100.Final")
     runtimeOnly "io.micronaut:micronaut-management"
 
     // Delta reading
     implementation "io.delta:delta-standalone_2.12:3.1.0"
-    implementation("org.apache.hadoop:hadoop-client:3.4.0") {
+    implementation("org.apache.hadoop:hadoop-client:3.4.3") {
         exclude group: "org.slf4j"
     }
     implementation "org.apache.parquet:parquet-hadoop:1.13.1"
