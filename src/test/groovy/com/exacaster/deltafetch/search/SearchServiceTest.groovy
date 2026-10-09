@@ -1,9 +1,12 @@
 package com.exacaster.deltafetch.search
 
+import com.exacaster.deltafetch.TestTables
 import com.exacaster.deltafetch.search.delta.DeltaMetaReader
 import io.micronaut.cache.SyncCache
 import org.apache.hadoop.conf.Configuration
 import spock.lang.Specification
+import java.time.Duration
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 
 class SearchServiceTest extends Specification {
@@ -128,6 +131,56 @@ class SearchServiceTest extends Specification {
 
         then: "returns empty list"
         results.isEmpty()
+
+        cleanup:
+        executorService.shutdown()
+    }
+
+    def "waiting for a free reader thread does not count against the file read timeout"() {
+        given: "the only reader thread is busy for longer than the file read timeout"
+        def cache = Mock(SyncCache) {
+            get(*_) >> Optional.empty()
+        }
+        def conf = new Configuration()
+        def statsReader = new DeltaMetaReader(conf, cache)
+        def executorService = Executors.newFixedThreadPool(1)
+        def svc = new SearchService(statsReader, new Configuration(), executorService,
+                Duration.ofSeconds(2), Duration.ofSeconds(20))
+        def path = getClass().getResource("/test_data").toString()
+        def release = new CountDownLatch(1)
+        executorService.execute { release.await() }
+        Thread.start {
+            sleep(3000)
+            release.countDown()
+        }
+
+        when:
+        def result = svc.find(path, [new ColumnValueFilter("user_id", "912740210653_1451011")], true, 1).findFirst()
+
+        then: "the file is read once the thread is free"
+        result.isPresent()
+
+        cleanup:
+        release.countDown()
+        executorService.shutdown()
+    }
+
+    def "a file that cannot be read fails the search instead of returning no results"() {
+        given: "a table whose only active data file is missing"
+        def cache = Mock(SyncCache) {
+            get(*_) >> Optional.empty()
+        }
+        def conf = new Configuration()
+        def statsReader = new DeltaMetaReader(conf, cache)
+        def executorService = Executors.newFixedThreadPool(2)
+        def svc = new SearchService(statsReader, new Configuration(), executorService)
+        def path = TestTables.withoutActiveDataFile().toUri().toString()
+
+        when:
+        svc.find(path, [new ColumnValueFilter("user_id", "912740210653_1451011")], true, 1)
+
+        then:
+        thrown(IncompleteSearchException)
 
         cleanup:
         executorService.shutdown()
