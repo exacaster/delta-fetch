@@ -55,7 +55,7 @@ test {
 }
 
 tasks.named("dockerfile") {
-    baseImage = "gcr.io/distroless/java11:latest"
+    baseImage = "gcr.io/distroless/java11-debian11:latest"
     doLast {
         def dockerFile = file("${buildDir}/docker/main/Dockerfile")
         def content = dockerFile.text
